@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./cli-backend
+    container_name: fastapi_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/cli-backend
+    restart: always
+    networks:
+      - cliapp
+
+  frontend:
+    build: ./cli-frontend
+    container_name: flask_frontend
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./frontend:/cli-frontend
+    depends_on:
+      - backend
+    environment:
+      - FASTAPI_URL=http://172.19.0.1:8000
+    restart: always
+    networks:
+      - cliapp
+
+networks:
+  cliapp:
+    external : true
+    driver: bridge

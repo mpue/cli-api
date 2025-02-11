@@ -1,0 +1,23 @@
+# Verwende ein leichtgewichtiges Python-Image
+FROM python:3.12-slim
+
+# Setze das Arbeitsverzeichnis
+WORKDIR /app
+
+# Kopiere die Abhängigen Dateien
+COPY requirements.txt requirements.txt
+
+# Installiere die Abhängigkeiten
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Kopiere den Rest des Codes
+COPY . .
+
+# Flask auf Port 5000 laufen lassen
+EXPOSE 5000
+
+# Starte die Flask-App
+RUN pip install poetry
+RUN poetry install
+
+CMD ["poetry", "run", "python", "main.py"]
