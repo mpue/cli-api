@@ -8,16 +8,17 @@ WORKDIR /app
 COPY requirements.txt requirements.txt
 
 # Installiere die Abhängigkeiten
-RUN pip install --no-cache-dir -r requirements.txt 
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Kopiere den Rest des Codes
 COPY . .
 
 # Flask auf Port 5000 laufen lassen
-EXPOSE 5000
+EXPOSE 8501
 
 # Starte die Flask-App
 RUN pip install poetry
+RUN pip install streamlit
 RUN poetry install --no-root
 
-CMD ["poetry", "run", "python", "main.py"]
+CMD ["streamlit", "run",  "main.py"]

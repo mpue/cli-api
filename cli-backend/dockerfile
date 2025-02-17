@@ -7,12 +7,14 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update -y \
     && apt-get install blender -y \
-    && apt-get install xz-utils libsm6 libegl1 libegl1-mesa -y
+    && apt-get install xz-utils libsm6 libegl1 libegl1-mesa wget -y \
+    && wget https://download.blender.org/release/Blender4.3/blender-4.3.2-linux-x64.tar.xz
+     
+RUN tar -xf blender-4.3.2-linux-x64.tar.xz
+RUN ln -sf blender-4.3.2-linux-x64/blender ./blender
 
 WORKDIR /app
 COPY . /app
-RUN tar -xf blender-4.3.2-linux-x64.tar.xz
-RUN ln -sf blender-4.3.2-linux-x64/blender ./blender
 RUN pip install poetry
 RUN poetry install --no-root
 EXPOSE 8000

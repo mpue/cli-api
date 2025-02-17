@@ -16,7 +16,7 @@ services:
     build: ./cli-frontend
     container_name: flask_frontend
     ports:
-      - "5000:5000"
+      - "8501:8501"
     volumes:
       - ./frontend:/cli-frontend
     depends_on:
