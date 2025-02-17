@@ -6,11 +6,14 @@ FROM python:3.12-slim
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update -y \
-    && apt-get install blender -y
+    && apt-get install blender -y \
+    && apt-get install xz-utils libsm6 libegl1 libegl1-mesa -y
 
 WORKDIR /app
 COPY . /app
+RUN tar -xf blender-4.3.2-linux-x64.tar.xz
+RUN ln -sf blender-4.3.2-linux-x64/blender ./blender
 RUN pip install poetry
-RUN poetry install
+RUN poetry install --no-root
 EXPOSE 8000
 CMD ["poetry", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
