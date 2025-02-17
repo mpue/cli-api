@@ -8,7 +8,7 @@ WORKDIR /app
 COPY requirements.txt requirements.txt
 
 # Installiere die Abhängigkeiten
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt 
 
 # Kopiere den Rest des Codes
 COPY . .
@@ -18,6 +18,6 @@ EXPOSE 5000
 
 # Starte die Flask-App
 RUN pip install poetry
-RUN poetry install
+RUN poetry install --no-root
 
 CMD ["poetry", "run", "python", "main.py"]
