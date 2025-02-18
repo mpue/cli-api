@@ -7,6 +7,8 @@ import os
 
 app = FastAPI()
 
+ALLOWED_COMMANDS = ["blender"] 
+
 UPLOAD_DIR = "/app/uploads"  # Verzeichnis für hochgeladene Dateien im Container
 
 # Sicherstellen, dass der Upload-Ordner existiert
@@ -30,6 +32,9 @@ async def run_command(command: str = Form(...), filename: str = Form(None)):
     """
     try:
         args = shlex.split(command)
+
+        if args[0] not in ALLOWED_COMMANDS:
+            raise HTTPException(status_code=403, detail="Command not allowed")
 
         # Falls eine Datei angegeben wurde, den absoluten Pfad an den Befehl hängen
         if filename:

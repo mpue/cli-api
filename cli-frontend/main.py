@@ -17,8 +17,9 @@ if uploaded_file is not None:
     st.json(response.json())
 
 # Command Execution
+default_command = "/blender -b uploads/default.blend --python gen.py -- --run"
 st.header("Run Command")
-command = st.text_input("Enter command")
+command = st.text_input("Enter command",default_command)
 filename = st.text_input("Filename (optional)")
 if st.button("Run Command"):
     data = {'command': command}
