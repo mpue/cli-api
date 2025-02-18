@@ -2,9 +2,10 @@ import streamlit as st
 import requests
 import os
 import time
+import re  # Für das Parsen des Bildpfads
 
 FASTAPI_URL = "http://172.19.0.1:8000"  # Passe die URL an, falls FastAPI woanders läuft
-UPLOAD_FOLDER = "uploads"
+UPLOAD_FOLDER = "/app/uploads"  # Blender speichert dort das gerenderte Bild
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 st.title("Streamlit FastAPI Interface")
@@ -23,15 +24,18 @@ st.header("Run Command")
 command = st.text_input("Enter command", default_command)
 filename = st.text_input("Filename (optional)")
 
-# Fortschritt & Logs im Session-State speichern
+# Fortschritt, Logs & Bildpfad im Session-State speichern
 if "highest_progress" not in st.session_state:
     st.session_state.highest_progress = 0
 if "log_output" not in st.session_state:
     st.session_state.log_output = ""  # Log zwischenspeichern
+if "rendered_image" not in st.session_state:
+    st.session_state.rendered_image = None  # Pfad zum fertigen Bild
 
 progress_placeholder = st.empty()
 status_text = st.empty()
 log_placeholder = st.empty()
+image_placeholder = st.empty()  # Platzhalter für das fertige Bild
 
 def extract_progress(line):
     """
@@ -50,6 +54,16 @@ def extract_progress(line):
                 return None
     return None
 
+def extract_rendered_image(line):
+    """
+    Sucht nach dem Bildpfad in Blender-Logs.
+    Beispiel-Log: "Saved: '/app/uploads/output.png'"
+    """
+    match = re.search(r"Saved:\s?'(.+?\.(png|jpg|jpeg|exr))'", line)
+    if match:
+        return match.group(1)
+    return None
+
 if st.button("Run Command"):
     data = {'command': command}
     if filename:
@@ -60,6 +74,7 @@ if st.button("Run Command"):
     if response.status_code == 200:
         st.session_state.highest_progress = 0  # Fortschritt zurücksetzen
         st.session_state.log_output = ""  # Log zurücksetzen
+        st.session_state.rendered_image = None  # Bildpfad zurücksetzen
 
         # **Echtzeit-Update**
         for line in response.iter_lines():
@@ -72,6 +87,11 @@ if st.button("Run Command"):
                 if progress is not None:
                     st.session_state.highest_progress = max(st.session_state.highest_progress, progress)
 
+                # **Bildpfad erkennen**
+                img_path = extract_rendered_image(decoded_line)
+                if img_path:
+                    st.session_state.rendered_image = img_path  # Bildpfad speichern
+
                 # **Live UI-Update ohne Duplicate-Key-Fehler**
                 progress_placeholder.progress(st.session_state.highest_progress)
                 status_text.text(f"Fortschritt: {st.session_state.highest_progress}%")
@@ -80,6 +100,22 @@ if st.button("Run Command"):
                 time.sleep(0.1)  # Kurze Pause für flüssigere Updates
 
         st.success("Render abgeschlossen!")
+
+        # **Warten, bis das Bild existiert**
+        if st.session_state.rendered_image:
+            image_path = st.session_state.rendered_image
+            for _ in range(10):  # 10 Versuche, das Bild zu finden
+                if os.path.exists(image_path):
+                    break
+                time.sleep(0.5)  # Warte 0.5 Sekunden pro Versuch
+
+            # **Fertiges Bild anzeigen, falls vorhanden**
+            if os.path.exists(image_path):
+                image_placeholder.image(image_path, caption="Gerendertes Bild", use_column_width=True)
+            else:
+                st.warning(f"Das Bild wurde nicht gefunden: {image_path}")
+        else:
+            st.warning("Kein gerendertes Bild erkannt.")
     else:
         st.error(f"Fehler: {response.status_code} - {response.text}")
 
