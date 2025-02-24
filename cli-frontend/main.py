@@ -8,7 +8,16 @@ FASTAPI_URL = "http://172.19.0.1:8000"
 UPLOAD_FOLDER = "/data/uploads"  # blender output
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-st.title("UniBlend Package Generator Service")
+BLENDER_LOGO_PATH = "blender_logo.png"  
+# Alternatively, use a URL:
+# BLENDER_LOGO_PATH = "https://www.blender.org/wp-content/uploads/2013/07/blender_logo.png"
+
+# Create a header row with two columns: title on the left, logo on the right.
+col1, col2 = st.columns([3, 1])
+with col1:
+    st.title("UniBlend Package Generator.")
+with col2:
+    st.image(BLENDER_LOGO_PATH, use_column_width=True)
 
 # File Upload
 st.header("Upload File")
@@ -117,7 +126,7 @@ if st.button("Run Command"):
 
             # **Fertiges Bild anzeigen, falls vorhanden**
             if os.path.exists(image_path):
-                image_placeholder.image(image_path, caption="Gerendertes Bild", use_column_width=True)
+                image_placeholder.image(image_path, caption="Preview", use_column_width=True)
             else:
                 st.warning(f"The image could not be found: {image_path}")
         else:
