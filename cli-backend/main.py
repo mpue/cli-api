@@ -7,7 +7,7 @@ import os
 app = FastAPI()
 
 ALLOWED_COMMANDS = ["/blender"]  # Sicherstellen, dass nur Blender als Kommando erlaubt ist
-UPLOAD_DIR = "/app/uploads"  # Verzeichnis für hochgeladene Dateien im Container
+UPLOAD_DIR = "/data/uploads"  # Verzeichnis für hochgeladene Dateien im Container
 os.makedirs(UPLOAD_DIR, exist_ok=True)  # Sicherstellen, dass das Upload-Verzeichnis existiert
 
 def run_command_stream(command: str, filename: str = None):

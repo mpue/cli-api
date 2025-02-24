@@ -16,6 +16,7 @@ import bpy
 import os
 import random
 import sys
+import argparse
 
 
 bl_info = {
@@ -56,14 +57,16 @@ class GeneratePackageOperator(bpy.types.Operator):
         generate_package()
         return {'FINISHED'}
 
-def generate_package():
+def generate_package(args):
+    '''
     width = bpy.context.scene.package_width * random.uniform(1.0 - bpy.context.scene.package_random_factor, 1.0 + bpy.context.scene.package_random_factor)
     height = bpy.context.scene.package_height * random.uniform(1.0 - bpy.context.scene.package_random_factor, 1.0 + bpy.context.scene.package_random_factor)
     depth = bpy.context.scene.package_depth * random.uniform(1.0 - bpy.context.scene.package_random_factor, 1.0 + bpy.context.scene.package_random_factor)
+    '''
 
     bpy.ops.mesh.primitive_cube_add()
     package = bpy.context.object
-    package.scale = (width / 2, depth / 2, height / 2)
+    package.scale = (args.pwidth / 2, args.pdepth / 2, args.pheight / 2)
     package.name = "GeneratedPackage"
 
     bpy.ops.object.mode_set(mode='EDIT')
@@ -117,7 +120,7 @@ def export_usd(filepath):
     bpy.ops.wm.usd_export(filepath=filepath, export_textures=True)
 
 def renderAndSaveImage():
-    bpy.context.scene.render.filepath = "/app/uploads/output.png"
+    bpy.context.scene.render.filepath = "/data/uploads/output.png"
     bpy.context.preferences.addons['cycles'].preferences.compute_device_type = 'CUDA'  # Alternative: 'OPTIX' or 'HIP' for AMD
     bpy.context.scene.cycles.device = 'GPU'
 
@@ -139,6 +142,22 @@ bpy.types.Scene.package_subdivisions = bpy.props.IntProperty(name="Subdivisions"
 bpy.types.Scene.package_deformation_strength = bpy.props.FloatProperty(name="Deformation Strength", default=0.1, min=0.0, max=1.0)
 bpy.types.Scene.package_texture = bpy.props.StringProperty(name="Texture Path", subtype='FILE_PATH')
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='Blender Render Script')
+    parser.add_argument('--pwidth', type=float, required=True, help='Package width')
+    parser.add_argument('--pheight', type=float, required=True, help='Package height')
+    parser.add_argument('--pdepth', type=float, required=True, help='Package depth')
+    # Filter out Blender's own arguments: only consider args after '--'
+    argv = sys.argv
+    if "--" in argv:
+        argv = argv[argv.index("--") + 1:]
+    else:
+        argv = []
+    args = parser.parse_args(argv)
+    return args
+
+
+
 # Register classes
 def register():
     bpy.utils.register_class(PackageGeneratorPanel)
@@ -157,8 +176,9 @@ def unregister():
 
 if __name__ == "__main__":
     register()
-    if '--run' in sys.argv:
-        generate_package()
-        export_usd("/app/uploads/package.usda")
-        renderAndSaveImage()
-        bpy.ops.wm.quit_blender()
+    # if '--run' in sys.argv:
+    args = parse_args()
+    generate_package(args)
+    export_usd("/data/uploads/package.usda")
+    renderAndSaveImage()
+    bpy.ops.wm.quit_blender()

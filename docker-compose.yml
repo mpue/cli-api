@@ -7,7 +7,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/cli-backend
+      - /app/shared:/data
     restart: always
     networks:
       - cliapp
@@ -18,7 +18,7 @@ services:
     ports:
       - "8501:8501"
     volumes:
-      - ./frontend:/cli-frontend
+      - /app/shared:/data
     depends_on:
       - backend
     environment:

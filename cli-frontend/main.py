@@ -2,13 +2,13 @@ import streamlit as st
 import requests
 import os
 import time
-import re  # Für das Parsen des Bildpfads
+import re  # parsing image paths
 
-FASTAPI_URL = "http://172.19.0.1:8000"  # Passe die URL an, falls FastAPI woanders läuft
-UPLOAD_FOLDER = "/app/uploads"  # Blender speichert dort das gerenderte Bild
+FASTAPI_URL = "http://172.19.0.1:8000"  
+UPLOAD_FOLDER = "/data/uploads"  # blender output
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-st.title("Streamlit FastAPI Interface")
+st.title("UniBlend Service")
 
 # File Upload
 st.header("Upload File")
