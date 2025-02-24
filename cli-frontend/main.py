@@ -8,7 +8,7 @@ FASTAPI_URL = "http://172.19.0.1:8000"
 UPLOAD_FOLDER = "/data/uploads"  # blender output
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-st.title("UniBlend Service")
+st.title("UniBlend Package Generator Service")
 
 # File Upload
 st.header("Upload File")
@@ -20,9 +20,14 @@ if uploaded_file is not None:
 
 # Command Execution mit Fortschrittsanzeige
 default_command = "/blender -b uploads/default.blend --python gen.py -- --run"
-st.header("Run Command")
-command = st.text_input("Enter command", default_command)
-filename = st.text_input("Filename (optional)")
+st.header("Run Generator")
+#command = st.text_input("Enter command", default_command)
+#filename = st.text_input("Filename (optional)")
+pwidth = st.number_input("Package Width")
+pheight = st.number_input("Package Height")
+pdepth = st.number_input("Package Depth")
+
+
 
 # Fortschritt, Logs & Bildpfad im Session-State speichern
 if "highest_progress" not in st.session_state:
@@ -65,10 +70,11 @@ def extract_rendered_image(line):
     return None
 
 if st.button("Run Command"):
-    data = {'command': command}
-    if filename:
-        data['filename'] = filename
-    
+
+    filename = 'default.blend'
+
+    data = {'command': f"/blender -b /data/uploads/{filename} --python gen.py -- --pwidth={pwidth} --pheight={pheight} --pdepth={pdepth}" }
+    data['filename'] = 'default.blend'
     response = requests.post(f"{FASTAPI_URL}/run/", data=data, stream=True)
 
     if response.status_code == 200:
@@ -94,12 +100,12 @@ if st.button("Run Command"):
 
                 # **Live UI-Update ohne Duplicate-Key-Fehler**
                 progress_placeholder.progress(st.session_state.highest_progress)
-                status_text.text(f"Fortschritt: {st.session_state.highest_progress}%")
+                status_text.text(f"Progress: {st.session_state.highest_progress}%")
                 log_placeholder.text_area("Render Log", st.session_state.log_output, height=300)
 
                 time.sleep(0.1)  # Kurze Pause für flüssigere Updates
 
-        st.success("Render abgeschlossen!")
+        st.success("Render finished!")
 
         # **Warten, bis das Bild existiert**
         if st.session_state.rendered_image:
@@ -113,11 +119,11 @@ if st.button("Run Command"):
             if os.path.exists(image_path):
                 image_placeholder.image(image_path, caption="Gerendertes Bild", use_column_width=True)
             else:
-                st.warning(f"Das Bild wurde nicht gefunden: {image_path}")
+                st.warning(f"The image could not be found: {image_path}")
         else:
-            st.warning("Kein gerendertes Bild erkannt.")
+            st.warning("No preview found.")
     else:
-        st.error(f"Fehler: {response.status_code} - {response.text}")
+        st.error(f"Error: {response.status_code} - {response.text}")
 
 # File Download
 st.header("Download File")

@@ -14,9 +14,7 @@ def run_command_stream(command: str, filename: str = None):
     """ Führt einen Befehl aus und streamt den Output als Generator. """
     args = shlex.split(command)
 
-    if args[0] not in ALLOWED_COMMANDS:
-        yield "ERROR: Command not allowed\n"
-        return
+    print(command)
 
     # Falls eine Datei übergeben wurde, prüfen, ob sie existiert und den Pfad anhängen
     if filename:
@@ -24,7 +22,7 @@ def run_command_stream(command: str, filename: str = None):
         if not os.path.exists(file_path):
             yield "ERROR: File not found\n"
             return
-        args.append(file_path)
+        #args.append(file_path)
 
     process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
 
