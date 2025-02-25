@@ -1,23 +1,8 @@
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-# General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-
-
 import bpy
 import os
 import random
 import sys
 import argparse
-
 
 bl_info = {
     "name": "Package Generator",
@@ -64,6 +49,19 @@ def generate_package(args):
     depth = bpy.context.scene.package_depth * random.uniform(1.0 - bpy.context.scene.package_random_factor, 1.0 + bpy.context.scene.package_random_factor)
     '''
 
+    # Define the directory where images will be unpacked
+    unpack_dir = bpy.path.abspath("//textures")
+
+    # Ensure the directory exists
+    if not os.path.exists(unpack_dir):
+        os.makedirs(unpack_dir)
+
+    # Iterate through all packed images
+    for image in bpy.data.images:
+        if image.packed_file:
+            print(f"Unpacking {image.name}...")
+            image.unpack(method='USE_LOCAL')
+
     bpy.ops.mesh.primitive_cube_add()
     package = bpy.context.object
     package.scale = (args.pwidth / 2, args.pdepth / 2, args.pheight / 2)
@@ -80,7 +78,7 @@ def generate_package(args):
     modifier = package.modifiers.new(name="Displacement", type='DISPLACE')
     texture = bpy.data.textures.new(name="NoiseTexture", type='CLOUDS')
     modifier.texture = texture
-    modifier.strength = bpy.context.scene.package_deformation_strength
+    modifier.strength = args.prandom
 
     bpy.ops.object.shade_smooth()
 
@@ -147,6 +145,7 @@ def parse_args():
     parser.add_argument('--pwidth', type=float, required=True, help='Package width')
     parser.add_argument('--pheight', type=float, required=True, help='Package height')
     parser.add_argument('--pdepth', type=float, required=True, help='Package depth')
+    parser.add_argument('--prandom', type=float, required=True, help='Package depth')
     # Filter out Blender's own arguments: only consider args after '--'
     argv = sys.argv
     if "--" in argv:
@@ -155,8 +154,6 @@ def parse_args():
         argv = []
     args = parser.parse_args(argv)
     return args
-
-
 
 # Register classes
 def register():

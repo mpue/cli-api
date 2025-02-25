@@ -15,9 +15,9 @@ BLENDER_LOGO_PATH = "blender_logo.png"
 # Create a header row with two columns: title on the left, logo on the right.
 col1, col2 = st.columns([3, 1])
 with col1:
-    st.title("UniBlend Package Generator.")
+    st.title("UniBlend Package Generator")
 with col2:
-    st.image(BLENDER_LOGO_PATH, use_column_width=True)
+    st.image(BLENDER_LOGO_PATH, use_container_width=True)
 
 # File Upload
 st.header("Upload File")
@@ -27,7 +27,7 @@ if uploaded_file is not None:
     response = requests.post(f"{FASTAPI_URL}/upload/", files=files)
     st.json(response.json())
 
-# Command Execution mit Fortschrittsanzeige
+# Command Execution with progress
 default_command = "/blender -b uploads/default.blend --python gen.py -- --run"
 st.header("Run Generator")
 #command = st.text_input("Enter command", default_command)
@@ -35,26 +35,24 @@ st.header("Run Generator")
 pwidth = st.number_input("Package Width")
 pheight = st.number_input("Package Height")
 pdepth = st.number_input("Package Depth")
-
-
-
-# Fortschritt, Logs & Bildpfad im Session-State speichern
+prandom = st.number_input("Package deformation factor")
+# Save progress, image path and rendered image in session
 if "highest_progress" not in st.session_state:
     st.session_state.highest_progress = 0
 if "log_output" not in st.session_state:
-    st.session_state.log_output = ""  # Log zwischenspeichern
+    st.session_state.log_output = ""  
 if "rendered_image" not in st.session_state:
-    st.session_state.rendered_image = None  # Pfad zum fertigen Bild
+    st.session_state.rendered_image = None  # path to image
 
 progress_placeholder = st.empty()
 status_text = st.empty()
 log_placeholder = st.empty()
-image_placeholder = st.empty()  # Platzhalter für das fertige Bild
+image_placeholder = st.empty()  # image placeholder
 
 def extract_progress(line):
     """
-    Extrahiert den Fortschritt aus einer Blender-Log-Zeile.
-    Beispiel: "Sample 256/4096" -> Fortschritt in Prozent.
+    Extract progress fom blender log
+    Example : "Sample 256/4096" -> progress in percent
     """
     if "Sample" in line:
         parts = line.split("Sample ")
@@ -82,7 +80,7 @@ if st.button("Run Command"):
 
     filename = 'default.blend'
 
-    data = {'command': f"/blender -b /data/uploads/{filename} --python gen.py -- --pwidth={pwidth} --pheight={pheight} --pdepth={pdepth}" }
+    data = {'command': f"/blender -b /data/uploads/{filename} --python gen.py -- --pwidth={pwidth} --pheight={pheight} --pdepth={pdepth} --prandom={prandom}" }
     data['filename'] = 'default.blend'
     response = requests.post(f"{FASTAPI_URL}/run/", data=data, stream=True)
 
@@ -126,7 +124,7 @@ if st.button("Run Command"):
 
             # **Fertiges Bild anzeigen, falls vorhanden**
             if os.path.exists(image_path):
-                image_placeholder.image(image_path, caption="Preview", use_column_width=True)
+                image_placeholder.image(image_path, caption="Preview", use_container_width=True)
             else:
                 st.warning(f"The image could not be found: {image_path}")
         else:
